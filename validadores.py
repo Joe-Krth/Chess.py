@@ -32,13 +32,14 @@ def validador_movimento(tabuleiro, peca):
         return simular(movimentos, tabuleiro, peca)
     
 def simular(movimentos, tabuleiro, peca):
-    novo_tabuleiro = copiar_tabuleiro(tabuleiro)
+    movimentos_legais = []
     for coord in movimentos:
+        novo_tabuleiro = copiar_tabuleiro(tabuleiro)
         novo_tabuleiro[coord[0]][coord[1]] = peca
         novo_tabuleiro[peca.posicao[0]][peca.posicao[1]] = " "
-        if xeque(novo_tabuleiro):
-            movimentos.remove(coord)
-    return movimentos
+        if not xeque(novo_tabuleiro):
+            movimentos_legais.append(coord)
+    return movimentos_legais
 
 def copiar_tabuleiro(tabuleiro):
     novo_tabuleiro = []
