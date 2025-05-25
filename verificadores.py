@@ -1,4 +1,5 @@
 from pecas import Torre, Cavalo, Bispo, Rainha, Rei, Peao, Peca
+import xadrez
 
 #Validadores
 def validador_peca(peca, turno):
@@ -158,3 +159,60 @@ def afogamento(tabuleiro):
     if movimentos_restantes_brancas == [] or movimentos_restantes_pretas == []:
         print("Empate!")
         return True
+#roque
+def espaco_livre_pretas(tabuleiro):                    
+    return all(tabuleiro[7][i] is None for i in [1,2,3])#checagem de espaço liberado das pretas na parte à esquerda do rei
+
+def espaco_livre_pretas2(tabuleiro):                    
+    return all(tabuleiro[7][i] is None for i in [5,6])#checagem de espaço liberado das pretas na parte à direita do rei
+
+def espaco_livre_brancas(tabuleiro):                    
+    return all(tabuleiro[0][i] is None for i in [1,2,3])#checagem de espaço liberado das brancas na parte à esquerda do rei
+
+def espaco_livre_brancas2(tabuleiro):                    
+    return all(tabuleiro[0][i] is None for i in [5,6])#checagem de espaço liberado das brancas na parte à direita do rei
+
+def posicao_torre_brancas(tabuleiro): #checa se a torre está na posição inicial, mas não se ocorreu alguma movimentação nela, tem que ver isso dps
+     return tabuleiro[0][0] == xadrez.torre_3 or tabuleiro[0][7] == xadrez.torre_4
+
+def posicao_torre_pretas(tabuleiro): #mesma coisa que a de cima
+     return tabuleiro[7][0] == xadrez.torre_1 or tabuleiro[7][7] == xadrez.torre_2
+
+def posicao_rei_brancas(tabuleiro): #checa se o rei está na posição inicial para fazer o roque, mas não se ele se moveu, tem que ver isso dps
+     return tabuleiro[0][4] == xadrez.rei_2
+
+def posicao_rei_pretas(tabuleiro): #mesma coisa que a de cima
+     return tabuleiro[7][4] == xadrez.rei_1
+
+def permissao_roque_pretas(tabuleiro): #checagem de condições para ocorrer o roque
+    if espaco_livre_pretas(tabuleiro) or espaco_livre_pretas2(tabuleiro) and posicao_torre_pretas(tabuleiro) and posicao_rei_pretas(tabuleiro):
+        return True  
+
+def mover_roque_pretas(peca, linha, coluna, tabuleiro): #Roque das pretas (movimento)
+    Permissao = permissao_roque_pretas(tabuleiro)
+    if Permissao == True and xadrez.mover_peca == tabuleiro[7][6]: #checa a posição que o jogador tentou mover o rei, se a posição ultrapassa o movimento padrão do rei então é uma tentativa de roque (creio que do jeito que fiz o código isso não funcione ainda, tem que ser implementado essa possibilidade)
+        tabuleiro[7][6] = xadrez.rei_1 #movimenta o rei para a posição do roque curto
+        tabuleiro[7][5] = xadrez.torre_2 #movimenta a torre para a posição de roque curto
+    elif Permissao == True and tabuleiro[7][2]: #repetição do que houve acima
+        tabuleiro[7][2] = xadrez.rei_1 #movimenta o rei para a posição do roque longo
+        tabuleiro[7][3] = xadrez.torre_1 #movimenta a torre para a posição de roque longo
+    else:
+        print("Movimento Inválido!") #caso o movimento seja inválido, não sei se funciona, foi só pra tentar mostrar o que eu planejo fazer
+        xadrez.mover_peca(peca, linha, coluna)
+
+def permissao_roque_brancas(tabuleiro): #checagem de condições para ocorrer o roque
+    if (espaco_livre_brancas(tabuleiro) or espaco_livre_brancas2(tabuleiro)) and posicao_torre_brancas(tabuleiro) and posicao_rei_brancas(tabuleiro):
+        return True    
+    
+def mover_roque_brancas(peca, linha, coluna, tabuleiro): #Roque das brancas (movimento)
+    permissao = permissao_roque_brancas(tabuleiro)
+    if permissao == True and xadrez.mover_peca == tabuleiro[0][6]: #checa a posição que o jogador tentou mover o rei, se a posição ultrapassa o movimento padrão do rei então é uma tentativa de roque (creio que do jeito que fiz o código isso não funcione ainda, tem que ser implementado essa possibilidade)
+        tabuleiro[0][6] = xadrez.rei_2 #movimenta o rei para a posição do roque curto
+        tabuleiro[0][5] = xadrez.torre_4 #movimenta a torre para a posição de roque curto
+    elif permissao == True and tabuleiro[0][2]: #repetição do que houve acima
+        tabuleiro[0][2] = xadrez.rei_2 #movimenta o rei para a posição do roque longo
+        tabuleiro[0][3] = xadrez.torre_3 #movimenta a torre para a posição de roque longo
+    else:
+        print("Movimento Inválido!") #caso o movimento seja inválido, não sei se funciona, foi só pra tentar mostrar o que eu planejo fazer
+        xadrez.mover_peca(peca, linha, coluna)
+#tudo isso só pra ter uma ideia base de como fazer o roque, tem mta coisa errada nesse código kkkkk
