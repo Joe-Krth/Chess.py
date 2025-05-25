@@ -1,8 +1,7 @@
 from tabuleiro import criar_tabuleiro, exibir
 from pecas import Torre, Cavalo, Bispo, Rainha, Rei, Peao, Peca
-from validadores import validador_peca, validador_movimento
 from coordenadas import codigos, coordenadas
-from verificadores import promocao_peao, xeque
+from verificadores import promocao_peao, xeque, xeque_mate, afogamento, validador_peca, validador_movimento
 tabuleiro = criar_tabuleiro()
 turno = 1
 
@@ -114,11 +113,19 @@ def mover_peca(peca, linha, coluna):
             else:
                 print("Movimento Inválido!")
                 mover_peca(peca, linha, coluna)
-
+    
 while turno != 0:
     promocao_peao(tabuleiro)
     if xeque(tabuleiro):
-        print("Xeque!")
+        if xeque_mate(tabuleiro):
+            exibir(tabuleiro)
+            break
+        else:
+            print("Xeque!")
+    else:
+        if afogamento(tabuleiro):
+            exibir(tabuleiro)
+            break
     exibir(tabuleiro)
     escolher_peca()
 
