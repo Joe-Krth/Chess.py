@@ -267,3 +267,18 @@ def mover_roque_brancas(peca, linha, coluna, tabuleiro): #Roque das brancas (mov
         print("Movimento Inválido!") #caso o movimento seja inválido, não sei se funciona, foi só pra tentar mostrar o que eu planejo fazer
         xadrez.mover_peca(peca, linha, coluna)
 #tudo isso só pra ter uma ideia base de como fazer o roque, tem mta coisa errada nesse código kkkkk
+
+#verificador de en passant
+def se_peao_linha(tabuleiro):#checa se algum peão branco ou preto se moveu 3 casas, independentemente de quantos turnos usou pra isso
+    for peca in tabuleiro[4]:
+        if isinstance (peca, Peao):
+            if peca.cor == "branca":
+                permissao_en_passant_B = 'tem permissão para o en passant'
+                return permissao_en_passant_B
+    for peca in tabuleiro[3]:
+        if isinstance (peca, Peao):
+            if peca.cor == "preta":
+                permissao_en_passant_P = 'tem permissão para o en passant'
+                return permissao_en_passant_P
+
+#agr vai checar se há um peão inimigo ao lado do peão que está retornando permissao_en_passant_P/B. Acho que dá pra fazer isso usando uma function que é chamada com o retorno de se_peao_linha, essa function vai checar se o peão que retornou permissao_en_passant_P/B tem algum peão inimigo ao lado, se tiver um peão inimigo ao lado então deve checar se esse peão inimigo chegou na casa onde está em um só turno (usando o histórico). Tem que ver uma forma de fazer com que além de retornar permissao_en_passant_P/B meio que retorne a posição do peão que foi detectado, se mudar o que a variável permissao_en_passant_P/B aloca dá pra fazer de boa.
