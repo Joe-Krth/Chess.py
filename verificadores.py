@@ -145,18 +145,69 @@ def xeque_mate(tabuleiro):
         return True
 
 def afogamento(tabuleiro):
-    movimentos_restantes_brancas = []
-    movimentos_restantes_pretas = []
+    if not xeque(tabuleiro):
+        movimentos_restantes_brancas = []
+        movimentos_restantes_pretas = []
+        for linha in tabuleiro:
+            for peca in linha:
+                if isinstance(peca, Peca):
+                    if peca.cor == "branca":
+                        if validador_movimento(tabuleiro, peca) != []:
+                            movimentos_restantes_brancas.append(1)
+                    else:
+                        if validador_movimento(tabuleiro, peca) != []:
+                            movimentos_restantes_pretas.append(1)
+        if movimentos_restantes_brancas == [] or movimentos_restantes_pretas == []:
+            return True
+
+def empates_lances(historico_jogadas):
+    if len(historico_jogadas) > 9:
+        if(historico_jogadas[-1] == historico_jogadas[-5] == historico_jogadas[-9] 
+           and historico_jogadas[-3] == historico_jogadas[-7] and
+           historico_jogadas[-2] == historico_jogadas[-6] == historico_jogadas[-10] 
+           and historico_jogadas[-4] == historico_jogadas[-8]):
+            return True
+    elif len(historico_jogadas) > 99:
+        if not "x" in historico_jogadas[-1: -100]:
+            return True
+
+def material(tabuleiro):
+    material_brancas = []
+    material_pretas = []
     for linha in tabuleiro:
         for peca in linha:
             if isinstance(peca, Peca):
                 if peca.cor == "branca":
-                    if validador_movimento(tabuleiro, peca) != []:
-                        movimentos_restantes_brancas.append(1)
+                    if isinstance(peca, Torre):
+                        material_brancas.append(5)
+                    if isinstance(peca, Cavalo):
+                        material_brancas.append(3)
+                    if isinstance(peca, Bispo):
+                        material_brancas.append(3)
+                    if isinstance(peca, Rainha):
+                        material_brancas.append(9)
+                    if isinstance(peca, Rei):
+                        material_brancas.append(1)
+                    if isinstance(peca, Peao):
+                        material_brancas.append(9)
                 else:
-                    if validador_movimento(tabuleiro, peca) != []:
-                        movimentos_restantes_pretas.append(1)
-    if movimentos_restantes_brancas == [] or movimentos_restantes_pretas == []:
+                    if isinstance(peca, Torre):
+                        material_pretas.append(5)
+                    if isinstance(peca, Cavalo):
+                        material_pretas.append(3)
+                    if isinstance(peca, Bispo):
+                        material_pretas.append(3)
+                    if isinstance(peca, Rainha):
+                        material_pretas.append(9)
+                    if isinstance(peca, Rei):
+                        material_pretas.append(1)
+                    if isinstance(peca, Peao):
+                        material_pretas.append(9)
+    if sum(material_brancas) < 5 and sum(material_pretas) < 5:
+        return True
+
+def empates(tabuleiro, historico_jogadas):
+    if afogamento(tabuleiro) or empates_lances(historico_jogadas) or material(tabuleiro):
         print("Empate!")
         return True
 #roque
