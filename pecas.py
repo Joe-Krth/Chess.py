@@ -1,5 +1,6 @@
 class Peca:
-    def __init__(self, cor, posicao):
+    def __init__(self, nome, cor, posicao):
+        self.nome = nome
         self.cor = cor
         self.posicao = posicao
 
