@@ -83,7 +83,7 @@ def escolher_peca():
 
 def validar_peca(peca, linha, coluna):
     if validador_peca(peca, turno):
-        print(f"Movimentos Disponíveis: {', '.join(codigos(validador_movimento(tabuleiro, peca)))}")
+        print(f"Movimentos Disponíveis: {', '.join(codigos(validador_movimento(tabuleiro, peca, historico_jogadas)))}")
         mover_peca(peca, linha, coluna)
     else:
         print("Peça Inválida!")
@@ -95,7 +95,43 @@ def mover_peca(peca, linha, coluna):
     global historico_jogadas
 
     if casa == " ": 
-        if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca):
+        if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca, historico_jogadas):
+            if isinstance (peca, Rei):
+                if peca.cor == "branca":
+                    if peca.posicao == (7, 4):
+                        if (linha_dest, coluna_dest) == (7, 2):
+                            torre = tabuleiro[7][0]
+                            tabuleiro[7][3] = torre
+                            torre.posicao = (7, 3)
+                            tabuleiro[7][0] = " "
+                        elif (linha_dest, coluna_dest) == (7, 6):
+                            torre = tabuleiro[7][7]
+                            tabuleiro[7][5] = torre
+                            torre.posicao = (7, 5)
+                            tabuleiro[7][7] = " "
+                else:
+                    if peca.posicao == (0, 4):
+                        if (linha_dest, coluna_dest) == (0, 2):
+                            torre = tabuleiro[0][0]
+                            tabuleiro[0][3] = torre
+                            torre.posicao = (0, 3)
+                            tabuleiro[0][0] = " "
+                        elif (linha_dest, coluna_dest) == (0, 6):
+                            torre = tabuleiro[0][7]
+                            tabuleiro[0][5] = torre
+                            torre.posicao = (0, 5)
+                            tabuleiro[0][7] = " "
+            elif isinstance (peca, Peao):
+                if peca.cor == "branca":
+                    if (linha_dest, coluna_dest) == (2, (peca.posicao[1] - 1)):
+                        tabuleiro[3][(peca.posicao[1] - 1)] = " "
+                    elif (linha_dest, coluna_dest) == (2, (peca.posicao[1] + 1)):
+                        tabuleiro[3][(peca.posicao[1] + 1)] = " "
+                else:
+                    if (linha_dest, coluna_dest) == (5, (peca.posicao[1] - 1)):
+                        tabuleiro[4][(peca.posicao[1] - 1)] = " "
+                    elif (linha_dest, coluna_dest) == (5, (peca.posicao[1] + 1)):
+                        tabuleiro[4][(peca.posicao[1] + 1)] = " "
             tabuleiro[linha_dest][coluna_dest] = peca
             peca.posicao = (linha_dest, coluna_dest)
             tabuleiro[linha][coluna] = " "
@@ -111,7 +147,7 @@ def mover_peca(peca, linha, coluna):
             print(f"Peça: {' '.join(codigos([peca.posicao]))}")
             validar_peca(peca, linha, coluna)
         else:
-            if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca):
+            if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca, historico_jogadas):
                 tabuleiro[linha_dest][coluna_dest] = peca
                 peca.posicao = (linha_dest, coluna_dest)
                 tabuleiro[linha][coluna] = " "
@@ -124,7 +160,7 @@ def mover_peca(peca, linha, coluna):
 while turno != 0:
     promocao_peao(tabuleiro)
     if xeque(tabuleiro):
-        if xeque_mate(tabuleiro):
+        if xeque_mate(tabuleiro, historico_jogadas):
             exibir(tabuleiro)
             break
         elif empates(tabuleiro, historico_jogadas):
