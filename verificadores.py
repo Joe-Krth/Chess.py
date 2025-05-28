@@ -1,5 +1,4 @@
 from pecas import Torre, Cavalo, Bispo, Rainha, Rei, Peao, Peca
-import xadrez
 
 #Validadores
 def validador_peca(peca, turno):
@@ -12,7 +11,7 @@ def validador_peca(peca, turno):
         if peca.cor == "preta":
             return True
 
-def validador_movimento(tabuleiro, peca):
+def validador_movimento(tabuleiro, peca, historico_jogadas):
     if isinstance(peca, Torre):
         movimentos = peca.movimento_torre(tabuleiro)
         return simular(movimentos, tabuleiro, peca)
@@ -27,11 +26,35 @@ def validador_movimento(tabuleiro, peca):
         return simular(movimentos, tabuleiro, peca)
     elif isinstance(peca, Rei):
         movimentos = peca.movimento_rei(tabuleiro)
-        return simular(movimentos, tabuleiro, peca)
+        movimentos_legais = simular(movimentos, tabuleiro, peca)
+        if peca.cor == "branca":
+            if roque_longo(tabuleiro, peca, historico_jogadas):
+                movimentos_legais.append((7, 2))
+            elif roque_curto(tabuleiro, peca, historico_jogadas):
+                movimentos_legais.append((7, 6))
+        else:
+            if roque_longo(tabuleiro, peca, historico_jogadas):
+                movimentos_legais.append((0, 2))
+            elif roque_curto(tabuleiro, peca, historico_jogadas):
+                movimentos_legais.append((0, 6))
+        return movimentos_legais
     elif isinstance(peca, Peao):
         movimentos = peca.movimento_peao(tabuleiro)
-        return simular(movimentos, tabuleiro, peca)
-    
+        movimentos_legais = simular(movimentos, tabuleiro, peca)
+        enPassant = en_passant(tabuleiro, peca, historico_jogadas)
+        if enPassant != None:
+            if peca.cor == "branca":
+                if "esquerda" in enPassant:
+                    movimentos_legais.append((2, peca.posicao[1] - 1))
+                if "direita" in enPassant:
+                    movimentos_legais.append((2, peca.posicao[1] + 1))
+            else:
+                if "esquerda" in enPassant:
+                    movimentos_legais.append((5, peca.posicao[1] - 1))
+                if "direita" in enPassant:
+                    movimentos_legais.append((5, peca.posicao[1] + 1))
+        return movimentos_legais
+
 def simular(movimentos, tabuleiro, peca):
     movimentos_legais = []
     for coord in movimentos:
@@ -88,6 +111,73 @@ def promocao_peao(tabuleiro):
                     print("Promoção Inválida!")
                     promocao_peao(tabuleiro)
 
+def en_passant(tabuleiro, peca, historico_jogadas):
+    enPassant = []
+    if peca in tabuleiro[3]:
+        if isinstance (peca, Peao):
+            if peca.cor == "branca":
+                if peao_esquerda(tabuleiro, peca, historico_jogadas):
+                    enPassant.append("esquerda")
+                if peao_direita(tabuleiro, peca, historico_jogadas):
+                    enPassant.append("direita")
+                return enPassant
+    elif peca in tabuleiro[4]:
+        if isinstance (peca, Peao):
+            if peca.cor == "preta":
+                if peao_esquerda(tabuleiro, peca, historico_jogadas):
+                    enPassant.append("esquerda")
+                if peao_direita(tabuleiro, peca, historico_jogadas):
+                    enPassant.append("direita")
+                return enPassant
+
+def peao_esquerda(tabuleiro, peca, historico_jogadas):
+    historico = historico_jogadas[:-1]
+    presente = []
+    if peca.cor == "branca":
+        peao1 = tabuleiro[3][(peca.posicao[1] - 1)]
+        if isinstance (peao1, Peao):
+            if peao1.cor != peca.cor:
+                for item in historico:
+                    if peao1.nome in item:
+                        presente.append(1)
+                if presente == []:
+                    if peao1.nome in historico_jogadas[-1]:
+                        return True
+    else:
+        peao1 = tabuleiro[4][(peca.posicao[1] - 1)]
+        if isinstance (peao1, Peao):
+            if peao1.cor != peca.cor:
+                for item in historico:
+                    if peao1.nome in item:
+                        presente.append(1)
+                if presente == []:
+                    if peao1.nome in historico_jogadas[-1]:
+                        return True
+
+def peao_direita(tabuleiro, peca, historico_jogadas):
+    historico = historico_jogadas[:-1]
+    presente = []
+    if peca.cor == "branca":
+        peao1 = tabuleiro[3][(peca.posicao[1] + 1)]
+        if isinstance (peao1, Peao):
+            if peao1.cor != peca.cor:
+                for item in historico:
+                    if peao1.nome in item:
+                        presente.append(1)
+                if presente == []:
+                    if peao1.nome in historico_jogadas[-1]:
+                        return True
+    else:
+        peao1 = tabuleiro[4][(peca.posicao[1] + 1)]
+        if isinstance (peao1, Peao):
+            if peao1.cor != peca.cor:
+                for item in historico:
+                    if peao1.nome in item:
+                        presente.append(1)
+                if presente == []:
+                    if peao1.nome in historico_jogadas[-1]:
+                        return True
+
 def xeque(tabuleiro):
     for linha in tabuleiro:
         for peca in linha:
@@ -122,18 +212,98 @@ def auxiliar(movimentos, tabuleiro):
         casa = tabuleiro[coord[0]][coord[1]]
         if isinstance (casa, Rei):
             return True
-        
-def xeque_mate(tabuleiro):
+
+def roque_longo(tabuleiro, peca, historico_jogadas):
+    if not xeque(tabuleiro):
+        if peca.cor == "branca":
+            casa1 = tabuleiro[7][1]
+            casa2 = tabuleiro[7][2]
+            casa3 = tabuleiro[7][3]
+            if casa1 == " " and casa2 == " " and casa3 == " ":
+                if simular_rei1(tabuleiro, peca):
+                    presente = []
+                    for item in historico_jogadas:
+                        if "torre_1" in item or "rei_1" in item:
+                            presente.append(1)
+                    if presente == []:
+                        return True
+        else:
+            casa1 = tabuleiro[0][1]
+            casa2 = tabuleiro[0][2]
+            casa3 = tabuleiro[0][3]
+            if casa1 == " " and casa2 == " " and casa3 == " ":
+                if simular_rei1(tabuleiro, peca):
+                    presente = []
+                    for item in historico_jogadas:
+                        if "torre_3" in item or "rei_2" in item:
+                            presente.append(1)
+                    if presente == []:
+                        return True
+
+def simular_rei1(tabuleiro, peca):
+    novo_tabuleiro = copiar_tabuleiro(tabuleiro)
+    if peca.cor == "branca":
+        novo_tabuleiro[7][1] = peca
+        novo_tabuleiro[7][2] = peca
+        novo_tabuleiro[7][3] = peca
+        if not xeque(novo_tabuleiro):
+            return True
+    else:
+        novo_tabuleiro[0][1] = peca
+        novo_tabuleiro[0][2] = peca
+        novo_tabuleiro[0][3] = peca
+        if not xeque(novo_tabuleiro):
+            return True
+
+def roque_curto(tabuleiro, peca, historico_jogadas):
+    if not xeque(tabuleiro):
+        if peca.cor == "branca":
+            casa1 = tabuleiro[7][5]
+            casa2 = tabuleiro[7][6]
+            if casa1 == " " and casa2 == " ":
+                if simular_rei2(tabuleiro, peca):
+                    presente = []
+                    for item in historico_jogadas:
+                        if "torre_2" in item or "rei_1" in item:
+                            presente.append(1)
+                    if presente == []:
+                        return True
+        else:
+            casa1 = tabuleiro[0][5]
+            casa2 = tabuleiro[0][6]
+            if casa1 == " " and casa2 == " ":
+                if simular_rei2(tabuleiro, peca):
+                    presente = []
+                    for item in historico_jogadas:
+                        if "torre_4" in item or "rei_2" in item:
+                            presente.append(1)
+                    if presente == []:
+                        return True
+
+def simular_rei2(tabuleiro, peca):
+    novo_tabuleiro = copiar_tabuleiro(tabuleiro)
+    if peca.cor == "branca":
+        novo_tabuleiro[7][5] = peca
+        novo_tabuleiro[7][6] = peca
+        if not xeque(novo_tabuleiro):
+            return True
+    else:
+        novo_tabuleiro[0][5] = peca
+        novo_tabuleiro[0][6] = peca
+        if not xeque(novo_tabuleiro):
+            return True
+
+def xeque_mate(tabuleiro, historico_jogadas):
     movimentos_restantes_brancas = []
     movimentos_restantes_pretas = []
     for linha in tabuleiro:
         for peca in linha:
             if isinstance(peca, Peca):
                 if peca.cor == "branca":
-                    if validador_movimento(tabuleiro, peca) != []:
+                    if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
                         movimentos_restantes_brancas.append(1)
                 else:
-                    if validador_movimento(tabuleiro, peca) != []:
+                    if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
                         movimentos_restantes_pretas.append(1)
     if movimentos_restantes_brancas == []:
         print("Xeque-mate!")
@@ -144,7 +314,7 @@ def xeque_mate(tabuleiro):
         print("Brancas Vencem!")
         return True
 
-def afogamento(tabuleiro):
+def afogamento(tabuleiro, historico_jogadas):
     if not xeque(tabuleiro):
         movimentos_restantes_brancas = []
         movimentos_restantes_pretas = []
@@ -152,10 +322,10 @@ def afogamento(tabuleiro):
             for peca in linha:
                 if isinstance(peca, Peca):
                     if peca.cor == "branca":
-                        if validador_movimento(tabuleiro, peca) != []:
+                        if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
                             movimentos_restantes_brancas.append(1)
                     else:
-                        if validador_movimento(tabuleiro, peca) != []:
+                        if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
                             movimentos_restantes_pretas.append(1)
         if movimentos_restantes_brancas == [] or movimentos_restantes_pretas == []:
             return True
@@ -168,7 +338,12 @@ def empates_lances(historico_jogadas):
            and historico_jogadas[-4] == historico_jogadas[-8]):
             return True
     elif len(historico_jogadas) > 99:
-        if not "x" in historico_jogadas[-1: -100]:
+        historico = historico_jogadas[-100:]
+        presente = []
+        for item in historico:
+            if "x" in item:
+                presente.append(1)
+        if presente == []:
             return True
 
 def material(tabuleiro):
@@ -207,63 +382,6 @@ def material(tabuleiro):
         return True
 
 def empates(tabuleiro, historico_jogadas):
-    if afogamento(tabuleiro) or empates_lances(historico_jogadas) or material(tabuleiro):
+    if afogamento(tabuleiro, historico_jogadas) or empates_lances(historico_jogadas) or material(tabuleiro):
         print("Empate!")
         return True
-#roque
-def espaco_livre_pretas(tabuleiro):                    
-    return all(tabuleiro[7][i] is None for i in [1,2,3])#checagem de espaço liberado das pretas na parte à esquerda do rei
-
-def espaco_livre_pretas2(tabuleiro):                    
-    return all(tabuleiro[7][i] is None for i in [5,6])#checagem de espaço liberado das pretas na parte à direita do rei
-
-def espaco_livre_brancas(tabuleiro):                    
-    return all(tabuleiro[0][i] is None for i in [1,2,3])#checagem de espaço liberado das brancas na parte à esquerda do rei
-
-def espaco_livre_brancas2(tabuleiro):                    
-    return all(tabuleiro[0][i] is None for i in [5,6])#checagem de espaço liberado das brancas na parte à direita do rei
-
-def posicao_torre_brancas(tabuleiro): #checa se a torre está na posição inicial, mas não se ocorreu alguma movimentação nela, tem que ver isso dps
-     return tabuleiro[0][0] == xadrez.torre_3 or tabuleiro[0][7] == xadrez.torre_4
-
-def posicao_torre_pretas(tabuleiro): #mesma coisa que a de cima
-     return tabuleiro[7][0] == xadrez.torre_1 or tabuleiro[7][7] == xadrez.torre_2
-
-def posicao_rei_brancas(tabuleiro): #checa se o rei está na posição inicial para fazer o roque, mas não se ele se moveu, tem que ver isso dps
-     return tabuleiro[0][4] == xadrez.rei_2
-
-def posicao_rei_pretas(tabuleiro): #mesma coisa que a de cima
-     return tabuleiro[7][4] == xadrez.rei_1
-
-def permissao_roque_pretas(tabuleiro): #checagem de condições para ocorrer o roque
-    if espaco_livre_pretas(tabuleiro) or espaco_livre_pretas2(tabuleiro) and posicao_torre_pretas(tabuleiro) and posicao_rei_pretas(tabuleiro):
-        return True  
-
-def mover_roque_pretas(peca, linha, coluna, tabuleiro): #Roque das pretas (movimento)
-    Permissao = permissao_roque_pretas(tabuleiro)
-    if Permissao == True and xadrez.mover_peca == tabuleiro[7][6]: #checa a posição que o jogador tentou mover o rei, se a posição ultrapassa o movimento padrão do rei então é uma tentativa de roque (creio que do jeito que fiz o código isso não funcione ainda, tem que ser implementado essa possibilidade)
-        tabuleiro[7][6] = xadrez.rei_1 #movimenta o rei para a posição do roque curto
-        tabuleiro[7][5] = xadrez.torre_2 #movimenta a torre para a posição de roque curto
-    elif Permissao == True and tabuleiro[7][2]: #repetição do que houve acima
-        tabuleiro[7][2] = xadrez.rei_1 #movimenta o rei para a posição do roque longo
-        tabuleiro[7][3] = xadrez.torre_1 #movimenta a torre para a posição de roque longo
-    else:
-        print("Movimento Inválido!") #caso o movimento seja inválido, não sei se funciona, foi só pra tentar mostrar o que eu planejo fazer
-        xadrez.mover_peca(peca, linha, coluna)
-
-def permissao_roque_brancas(tabuleiro): #checagem de condições para ocorrer o roque
-    if (espaco_livre_brancas(tabuleiro) or espaco_livre_brancas2(tabuleiro)) and posicao_torre_brancas(tabuleiro) and posicao_rei_brancas(tabuleiro):
-        return True    
-    
-def mover_roque_brancas(peca, linha, coluna, tabuleiro): #Roque das brancas (movimento)
-    permissao = permissao_roque_brancas(tabuleiro)
-    if permissao == True and xadrez.mover_peca == tabuleiro[0][6]: #checa a posição que o jogador tentou mover o rei, se a posição ultrapassa o movimento padrão do rei então é uma tentativa de roque (creio que do jeito que fiz o código isso não funcione ainda, tem que ser implementado essa possibilidade)
-        tabuleiro[0][6] = xadrez.rei_2 #movimenta o rei para a posição do roque curto
-        tabuleiro[0][5] = xadrez.torre_4 #movimenta a torre para a posição de roque curto
-    elif permissao == True and tabuleiro[0][2]: #repetição do que houve acima
-        tabuleiro[0][2] = xadrez.rei_2 #movimenta o rei para a posição do roque longo
-        tabuleiro[0][3] = xadrez.torre_3 #movimenta a torre para a posição de roque longo
-    else:
-        print("Movimento Inválido!") #caso o movimento seja inválido, não sei se funciona, foi só pra tentar mostrar o que eu planejo fazer
-        xadrez.mover_peca(peca, linha, coluna)
-#tudo isso só pra ter uma ideia base de como fazer o roque, tem mta coisa errada nesse código kkkkk
