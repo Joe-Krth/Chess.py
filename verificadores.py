@@ -30,12 +30,12 @@ def validador_movimento(tabuleiro, peca, historico_jogadas):
         if peca.cor == "branca":
             if roque_longo(tabuleiro, peca, historico_jogadas):
                 movimentos_legais.append((7, 2))
-            elif roque_curto(tabuleiro, peca, historico_jogadas):
+            if roque_curto(tabuleiro, peca, historico_jogadas):
                 movimentos_legais.append((7, 6))
         else:
             if roque_longo(tabuleiro, peca, historico_jogadas):
                 movimentos_legais.append((0, 2))
-            elif roque_curto(tabuleiro, peca, historico_jogadas):
+            if roque_curto(tabuleiro, peca, historico_jogadas):
                 movimentos_legais.append((0, 6))
         return movimentos_legais
     elif isinstance(peca, Peao):
@@ -133,50 +133,52 @@ def en_passant(tabuleiro, peca, historico_jogadas):
 def peao_esquerda(tabuleiro, peca, historico_jogadas):
     historico = historico_jogadas[:-1]
     presente = []
-    if peca.cor == "branca":
-        peao1 = tabuleiro[3][(peca.posicao[1] - 1)]
-        if isinstance (peao1, Peao):
-            if peao1.cor != peca.cor:
-                for item in historico:
-                    if peao1.nome in item:
-                        presente.append(1)
-                if presente == []:
-                    if peao1.nome in historico_jogadas[-1]:
-                        return True
-    else:
-        peao1 = tabuleiro[4][(peca.posicao[1] - 1)]
-        if isinstance (peao1, Peao):
-            if peao1.cor != peca.cor:
-                for item in historico:
-                    if peao1.nome in item:
-                        presente.append(1)
-                if presente == []:
-                    if peao1.nome in historico_jogadas[-1]:
-                        return True
+    if 0 <= (peca.posicao[1] - 1) < 8:
+        if peca.cor == "branca":
+            peao1 = tabuleiro[3][(peca.posicao[1] - 1)]
+            if isinstance (peao1, Peao):
+                if peao1.cor != peca.cor:
+                    for item in historico:
+                        if peao1.nome in item:
+                            presente.append(1)
+                    if presente == []:
+                        if peao1.nome in historico_jogadas[-1]:
+                            return True
+        else:
+            peao1 = tabuleiro[4][(peca.posicao[1] - 1)]
+            if isinstance (peao1, Peao):
+                if peao1.cor != peca.cor:
+                    for item in historico:
+                        if peao1.nome in item:
+                            presente.append(1)
+                    if presente == []:
+                        if peao1.nome in historico_jogadas[-1]:
+                            return True
 
 def peao_direita(tabuleiro, peca, historico_jogadas):
     historico = historico_jogadas[:-1]
     presente = []
-    if peca.cor == "branca":
-        peao1 = tabuleiro[3][(peca.posicao[1] + 1)]
-        if isinstance (peao1, Peao):
-            if peao1.cor != peca.cor:
-                for item in historico:
-                    if peao1.nome in item:
-                        presente.append(1)
-                if presente == []:
-                    if peao1.nome in historico_jogadas[-1]:
-                        return True
-    else:
-        peao1 = tabuleiro[4][(peca.posicao[1] + 1)]
-        if isinstance (peao1, Peao):
-            if peao1.cor != peca.cor:
-                for item in historico:
-                    if peao1.nome in item:
-                        presente.append(1)
-                if presente == []:
-                    if peao1.nome in historico_jogadas[-1]:
-                        return True
+    if 0 <= (peca.posicao[1] + 1) < 8:
+        if peca.cor == "branca":
+            peao1 = tabuleiro[3][(peca.posicao[1] + 1)]
+            if isinstance (peao1, Peao):
+                if peao1.cor != peca.cor:
+                    for item in historico:
+                        if peao1.nome in item:
+                            presente.append(1)
+                    if presente == []:
+                        if peao1.nome in historico_jogadas[-1]:
+                            return True
+        else:
+            peao1 = tabuleiro[4][(peca.posicao[1] + 1)]
+            if isinstance (peao1, Peao):
+                if peao1.cor != peca.cor:
+                    for item in historico:
+                        if peao1.nome in item:
+                            presente.append(1)
+                    if presente == []:
+                        if peao1.nome in historico_jogadas[-1]:
+                            return True
 
 def xeque(tabuleiro):
     for linha in tabuleiro:
