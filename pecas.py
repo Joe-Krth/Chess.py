@@ -6,7 +6,7 @@ class Peca:
 
 class Torre(Peca):
     def __str__(self):
-        return "R" if self.cor == "branca" else "r"
+        return "♖" if self.cor == "branca" else "♜"
 
     def movimento_torre(self, tabuleiro):
         jogadas = []
@@ -37,7 +37,7 @@ class Torre(Peca):
 
 class Cavalo(Peca):
     def __str__(self):
-        return "N" if self.cor == "branca" else "n"
+        return "♘" if self.cor == "branca" else "♞"
     
     def movimento_cavalo(self, tabuleiro):
         jogadas = []
@@ -67,7 +67,7 @@ class Cavalo(Peca):
 
 class Bispo(Peca):
     def __str__(self):
-        return "B" if self.cor == "branca" else "b"
+        return "♗" if self.cor == "branca" else "♝"
 
     def movimento_bispo(self, tabuleiro):
         jogadas = []
@@ -98,7 +98,7 @@ class Bispo(Peca):
 
 class Rainha(Peca):
     def __str__(self):
-        return "Q" if self.cor == "branca" else "q"
+        return "♕" if self.cor == "branca" else "♛"
     
     def movimento_rainha(self, tabuleiro):
         jogadas = []
@@ -133,7 +133,7 @@ class Rainha(Peca):
 
 class Rei(Peca):
     def __str__(self):
-        return "K" if self.cor == "branca" else "k"
+        return "♔" if self.cor == "branca" else "♚"
     
     def movimento_rei(self, tabuleiro):
         jogadas = []
@@ -163,7 +163,7 @@ class Rei(Peca):
 
 class Peao(Peca):
     def __str__(self):
-        return "P" if self.cor == "branca" else "p"
+        return "♙" if self.cor == "branca" else "♟"
     
     def movimento_peao(self, tabuleiro):
         jogadas = []
