@@ -11,22 +11,22 @@ def validador_peca(peca, turno):
         if peca.cor == "preta":
             return True
 
-def validador_movimento(tabuleiro, peca, historico_jogadas):
+def validador_movimento(tabuleiro, peca, historico_jogadas, turno):
     if isinstance(peca, Torre):
         movimentos = peca.movimento_torre(tabuleiro)
-        return simular(movimentos, tabuleiro, peca)
+        return simular(movimentos, tabuleiro, peca, turno)
     elif isinstance(peca, Cavalo):
         movimentos = peca.movimento_cavalo(tabuleiro)
-        return simular(movimentos, tabuleiro, peca)
+        return simular(movimentos, tabuleiro, peca, turno)
     elif isinstance(peca, Bispo):
         movimentos = peca.movimento_bispo(tabuleiro)
-        return simular(movimentos, tabuleiro, peca)
+        return simular(movimentos, tabuleiro, peca, turno)
     elif isinstance(peca, Rainha):
         movimentos = peca.movimento_rainha(tabuleiro)
-        return simular(movimentos, tabuleiro, peca)
+        return simular(movimentos, tabuleiro, peca, turno)
     elif isinstance(peca, Rei):
         movimentos = peca.movimento_rei(tabuleiro)
-        movimentos_legais = simular(movimentos, tabuleiro, peca)
+        movimentos_legais = simular(movimentos, tabuleiro, peca, turno)
         if peca.cor == "branca":
             if roque_longo(tabuleiro, peca, historico_jogadas):
                 movimentos_legais.append((7, 2))
@@ -40,7 +40,7 @@ def validador_movimento(tabuleiro, peca, historico_jogadas):
         return movimentos_legais
     elif isinstance(peca, Peao):
         movimentos = peca.movimento_peao(tabuleiro)
-        movimentos_legais = simular(movimentos, tabuleiro, peca)
+        movimentos_legais = simular(movimentos, tabuleiro, peca, turno)
         enPassant = en_passant(tabuleiro, peca, historico_jogadas)
         if enPassant != None:
             if peca.cor == "branca":
@@ -55,14 +55,18 @@ def validador_movimento(tabuleiro, peca, historico_jogadas):
                     movimentos_legais.append((5, peca.posicao[1] + 1))
         return movimentos_legais
 
-def simular(movimentos, tabuleiro, peca):
+def simular(movimentos, tabuleiro, peca, turno):
     movimentos_legais = []
     for coord in movimentos:
         novo_tabuleiro = copiar_tabuleiro(tabuleiro)
         novo_tabuleiro[coord[0]][coord[1]] = peca
         novo_tabuleiro[peca.posicao[0]][peca.posicao[1]] = " "
-        if not xeque(novo_tabuleiro):
-            movimentos_legais.append(coord)
+        if turno % 2 == 1:
+            if xeque(novo_tabuleiro) != "branco":
+                movimentos_legais.append(coord)
+        else:
+            if xeque(novo_tabuleiro) != "preto":
+                movimentos_legais.append(coord)
     return movimentos_legais
 
 def copiar_tabuleiro(tabuleiro):
@@ -186,38 +190,59 @@ def xeque(tabuleiro):
             if isinstance (peca, Peca):
                 if isinstance(peca, Torre):
                     if peca.movimento_torre(tabuleiro) != []:
-                        if auxiliar(peca.movimento_torre(tabuleiro), tabuleiro):
-                            return True
+                        if auxiliar_branco(peca.movimento_torre(tabuleiro), tabuleiro):
+                            return "branco"
+                        elif auxiliar_preto(peca.movimento_torre(tabuleiro), tabuleiro):
+                            return "preto"
                 elif isinstance(peca, Cavalo):
                     if peca.movimento_cavalo(tabuleiro) != []:
-                        if auxiliar(peca.movimento_cavalo(tabuleiro), tabuleiro):
-                            return True
+                        if auxiliar_branco(peca.movimento_cavalo(tabuleiro), tabuleiro):
+                            return "branco"
+                        elif auxiliar_preto(peca.movimento_cavalo(tabuleiro), tabuleiro):
+                            return "preto"
                 elif isinstance(peca, Bispo):
                     if peca.movimento_bispo(tabuleiro) != []:
-                        if auxiliar(peca.movimento_bispo(tabuleiro), tabuleiro):
-                            return True
+                        if auxiliar_branco(peca.movimento_bispo(tabuleiro), tabuleiro):
+                            return "branco"
+                        elif auxiliar_preto(peca.movimento_bispo(tabuleiro), tabuleiro):
+                            return "preto"
                 elif isinstance(peca, Rainha):
                     if peca.movimento_rainha(tabuleiro) != []:
-                        if auxiliar(peca.movimento_rainha(tabuleiro), tabuleiro):
-                            return True
+                        if auxiliar_branco(peca.movimento_rainha(tabuleiro), tabuleiro):
+                            return "branco"
+                        elif auxiliar_preto(peca.movimento_rainha(tabuleiro), tabuleiro):
+                            return "preto"
                 elif isinstance(peca, Rei):
                     if peca.movimento_rei(tabuleiro) != []:
-                        if auxiliar(peca.movimento_rei(tabuleiro), tabuleiro):
-                            return True
+                        if auxiliar_branco(peca.movimento_rei(tabuleiro), tabuleiro):
+                            return "branco"
+                        elif auxiliar_preto(peca.movimento_rei(tabuleiro), tabuleiro):
+                            return "preto"
                 elif isinstance(peca, Peao):
                     if peca.movimento_peao(tabuleiro) != []:
-                        if auxiliar(peca.movimento_peao(tabuleiro), tabuleiro):
-                            return True
+                        if auxiliar_branco(peca.movimento_peao(tabuleiro), tabuleiro):
+                            return "branco"
+                        elif auxiliar_preto(peca.movimento_peao(tabuleiro), tabuleiro):
+                            return "preto"
 
-def auxiliar(movimentos, tabuleiro):
+def auxiliar_branco(movimentos, tabuleiro):
     for coord in movimentos:
         casa = tabuleiro[coord[0]][coord[1]]
         if isinstance (casa, Rei):
-            return True
+            if casa.cor == "branca":
+                return True
+
+def auxiliar_preto(movimentos, tabuleiro):
+    for coord in movimentos:
+        casa = tabuleiro[coord[0]][coord[1]]
+        if isinstance (casa, Rei):
+            if casa.cor == "preta":
+                return True
+
 
 def roque_longo(tabuleiro, peca, historico_jogadas):
-    if not xeque(tabuleiro):
-        if peca.cor == "branca":
+    if peca.cor == "branca":
+        if xeque(tabuleiro) != "branco":
             casa1 = tabuleiro[7][1]
             casa2 = tabuleiro[7][2]
             casa3 = tabuleiro[7][3]
@@ -229,7 +254,8 @@ def roque_longo(tabuleiro, peca, historico_jogadas):
                             presente.append(1)
                     if presente == []:
                         return True
-        else:
+    else:
+        if xeque(tabuleiro) != "preto":
             casa1 = tabuleiro[0][1]
             casa2 = tabuleiro[0][2]
             casa3 = tabuleiro[0][3]
@@ -258,8 +284,8 @@ def simular_rei1(tabuleiro, peca):
             return True
 
 def roque_curto(tabuleiro, peca, historico_jogadas):
-    if not xeque(tabuleiro):
-        if peca.cor == "branca":
+    if peca.cor == "branca":
+        if xeque(tabuleiro) != "branco":
             casa1 = tabuleiro[7][5]
             casa2 = tabuleiro[7][6]
             if casa1 == " " and casa2 == " ":
@@ -270,7 +296,8 @@ def roque_curto(tabuleiro, peca, historico_jogadas):
                             presente.append(1)
                     if presente == []:
                         return True
-        else:
+    else:
+        if xeque(tabuleiro) != "preto":
             casa1 = tabuleiro[0][5]
             casa2 = tabuleiro[0][6]
             if casa1 == " " and casa2 == " ":
@@ -295,17 +322,17 @@ def simular_rei2(tabuleiro, peca):
         if not xeque(novo_tabuleiro):
             return True
 
-def xeque_mate(tabuleiro, historico_jogadas):
+def xeque_mate(tabuleiro, historico_jogadas, turno):
     movimentos_restantes_brancas = []
     movimentos_restantes_pretas = []
     for linha in tabuleiro:
         for peca in linha:
             if isinstance(peca, Peca):
                 if peca.cor == "branca":
-                    if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
+                    if validador_movimento(tabuleiro, peca, historico_jogadas, turno) != []:
                         movimentos_restantes_brancas.append(1)
                 else:
-                    if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
+                    if validador_movimento(tabuleiro, peca, historico_jogadas, turno) != []:
                         movimentos_restantes_pretas.append(1)
     if movimentos_restantes_brancas == []:
         print("Xeque-mate!")
@@ -316,18 +343,18 @@ def xeque_mate(tabuleiro, historico_jogadas):
         print("Brancas Vencem!")
         return True
 
-def afogamento(tabuleiro, historico_jogadas):
-    if not xeque(tabuleiro):
+def afogamento(tabuleiro, historico_jogadas, turno):
+    if xeque(tabuleiro) != "branco" and xeque(tabuleiro) != "preto":
         movimentos_restantes_brancas = []
         movimentos_restantes_pretas = []
         for linha in tabuleiro:
             for peca in linha:
                 if isinstance(peca, Peca):
                     if peca.cor == "branca":
-                        if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
+                        if validador_movimento(tabuleiro, peca, historico_jogadas, turno) != []:
                             movimentos_restantes_brancas.append(1)
                     else:
-                        if validador_movimento(tabuleiro, peca, historico_jogadas) != []:
+                        if validador_movimento(tabuleiro, peca, historico_jogadas, turno) != []:
                             movimentos_restantes_pretas.append(1)
         if movimentos_restantes_brancas == [] or movimentos_restantes_pretas == []:
             return True
@@ -383,7 +410,7 @@ def material(tabuleiro):
     if sum(material_brancas) < 5 and sum(material_pretas) < 5:
         return True
 
-def empates(tabuleiro, historico_jogadas):
-    if afogamento(tabuleiro, historico_jogadas) or empates_lances(historico_jogadas) or material(tabuleiro):
+def empates(tabuleiro, historico_jogadas, turno):
+    if afogamento(tabuleiro, historico_jogadas, turno) or empates_lances(historico_jogadas) or material(tabuleiro):
         print("Empate!")
         return True
