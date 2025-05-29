@@ -83,7 +83,7 @@ def escolher_peca():
 
 def validar_peca(peca, linha, coluna):
     if validador_peca(peca, turno):
-        print(f"Movimentos Disponíveis: {', '.join(codigos(validador_movimento(tabuleiro, peca, historico_jogadas)))}")
+        print(f"Movimentos Disponíveis: {', '.join(codigos(validador_movimento(tabuleiro, peca, historico_jogadas, turno)))}")
         mover_peca(peca, linha, coluna)
     else:
         print("Peça Inválida!")
@@ -95,7 +95,7 @@ def mover_peca(peca, linha, coluna):
     global historico_jogadas
 
     if casa == " ": 
-        if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca, historico_jogadas):
+        if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca, historico_jogadas, turno):
             if isinstance (peca, Rei):
                 if peca.cor == "branca":
                     if peca.posicao == (7, 4):
@@ -147,7 +147,7 @@ def mover_peca(peca, linha, coluna):
             print(f"Peça: {' '.join(codigos([peca.posicao]))}")
             validar_peca(peca, linha, coluna)
         else:
-            if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca, historico_jogadas):
+            if (linha_dest, coluna_dest) in validador_movimento(tabuleiro, peca, historico_jogadas, turno):
                 tabuleiro[linha_dest][coluna_dest] = peca
                 peca.posicao = (linha_dest, coluna_dest)
                 tabuleiro[linha][coluna] = " "
@@ -159,17 +159,17 @@ def mover_peca(peca, linha, coluna):
 
 while turno != 0:
     promocao_peao(tabuleiro)
-    if xeque(tabuleiro):
-        if xeque_mate(tabuleiro, historico_jogadas):
+    if xeque(tabuleiro) == "branco" or xeque(tabuleiro) == "preto":
+        if xeque_mate(tabuleiro, historico_jogadas, turno):
             exibir(tabuleiro)
             break
-        elif empates(tabuleiro, historico_jogadas):
+        elif empates(tabuleiro, historico_jogadas, turno):
             exibir(tabuleiro)
             break
         else:
             print("Xeque!")
     else:
-        if empates(tabuleiro, historico_jogadas):
+        if empates(tabuleiro, historico_jogadas, turno):
             exibir(tabuleiro)
             break
     exibir(tabuleiro)
